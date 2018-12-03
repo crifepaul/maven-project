@@ -1,40 +1,35 @@
 pipeline{
     agent any
-    tools{
-        maven 'localMAVEN'
-    }
-stages{
-    stage('Build') {
-        steps {
-            sh 'mvn clean package'
-        }
-        post{
-            success{
-                echo 'Archiving...'
-                archiveArtifacts artifacts: '**/target/*.war'
-            }
-        }
-    }
-    stage('Deploy to stage'){
-        steps {
-            build job: 'deploy-to-staging'
-        }
-    }
-    stage('Deploy to Prod'){
-	steps {
-	    timeout(time:5, unit:'DAYS'){
-		input message:'Approve Production Deployment?'
-	     }
-	    build job: 'deploy-to-prod'
+	parameters{
+		string{name: 'tomcat-dev', defaultValue: '34.217.85.124', description: 'staging server'}
+		string{name: 'tomcat-prod', defaultValue: '35.161.63.141', description: 'staging prod'}
 	}
-	post{
-	    success{
-		echo 'Code deployed to production'
-	    }
-	    failure{
-	    echo 'Deployment failed'
-	    }
+	triggers{
+		pollscm('* * * * *')
 	}
-    }    
-}
+	stages{
+		stage('Build'){
+			steps{
+				sh 'mvn clean package'
+			}
+			post{
+				echo 'Now Archiving'
+				archiveArtifacts artifacts: '**/target/*.war'
+			}
+		}
+		stage('Deployments'){
+			parallel{
+				stage('Deploy to Stage'){
+					steps{
+						sh "scp -i /root/tomcat-demo.pem **/target/*.war ec2-user@34.217.85.124:/var/lib/tomcat7/webapps"
+					}
+				}
+				stage('Deploy to Production'){
+					steps{
+						sh "scp -i /root/tomcat-demo.pem **/target/*.war ec2-user@35.161.63.141:/var/lib/tomcat7/webapps"
+					}
+				}
+			}
+		}
+	}	
 }
