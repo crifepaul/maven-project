@@ -21,7 +21,7 @@ stages{
         }
     }
     stage('Deploy to Prod'){
-	steps{
+	steps {
 	    timeout(time:5, unit:'DAYS'){
 		input message:'Approve Production Deployment?'
 	     }
@@ -31,9 +31,9 @@ stages{
 	    success{
 		echo 'Code deployed to production'
 	    }
-	}
-	failure{
+	    failure{
 	    echo 'Deployment failed'
+	    }
 	}
     }    
 }
