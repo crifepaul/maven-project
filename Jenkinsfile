@@ -14,11 +14,11 @@ stages{
                 archiveArtifacts artifacts: '**/target/*.war'
             }
         }
+    }
     stage('Deploy to stage'){
         steps {
             build 'deploy-to-staging'
         }
     }    
-    }
 }
 }
