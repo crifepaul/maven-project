@@ -5,7 +5,7 @@ pipeline{
 		string(name: 'tomcat-prod', defaultValue: '35.161.63.141', description: 'staging prod')
 	}
 	triggers{
-		pollscm('* * * * *')
+		pollSCM('* * * * *')
 	}
 	stages{
 		stage('Build'){
@@ -13,8 +13,10 @@ pipeline{
 				sh 'mvn clean package'
 			}
 			post{
-				echo 'Now Archiving'
-				archiveArtifacts artifacts: '**/target/*.war'
+				success{
+					echo 'Now Archiving'
+					archiveArtifacts artifacts: '**/target/*.war'
+				}
 			}
 		}
 		stage('Deployments'){
